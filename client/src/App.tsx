@@ -6,11 +6,10 @@ import Dashboard from "@/pages/Dashboard";
 import CaseDetail from "@/pages/CaseDetail";
 import NewCase from "@/pages/NewCase";
 import Profile from "@/pages/Profile";
+import Landing from "@/pages/Landing";
 import type { ReactNode } from "react";
 import type { Role } from "@/types";
 import Nav from "@/components/ui/navbar";
-import AIChatButton from "./components/AIChatButton";
-
 function PrivateRoute({
   children,
   requireRole,
@@ -71,11 +70,10 @@ export default function App() {
               </PrivateRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Landing />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
-      <AIChatButton />
     </>
   );
 }

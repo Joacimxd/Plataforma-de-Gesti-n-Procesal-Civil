@@ -34,6 +34,9 @@ export const IconChevronDown = (p: IconProps) => (
 export const IconX = (p: IconProps) => (
   <svg {...base(p)}><path d="M18 6 6 18M6 6l12 12"/></svg>
 );
+export const IconSend = (p: IconProps) => (
+  <svg {...base(p)}><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+);
 export const IconPlus = (p: IconProps) => (
   <svg {...base(p)}><path d="M12 5v14M5 12h14"/></svg>
 );

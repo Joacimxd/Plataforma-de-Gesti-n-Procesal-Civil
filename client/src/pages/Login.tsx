@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { User, Lock, ArrowRight, AlertCircle, Shield, ChevronRight } from 'lucide-react';
+import { User, Lock, ArrowRight, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
@@ -207,12 +207,6 @@ export function SmokeyBackground({
   );
 }
 
-const DEMO_CREDS = [
-  { role: "Magistrado/Juez", email: "judge@example.com" },
-  { role: "Ab. Demandante", email: "plaintiff@example.com" },
-  { role: "Ab. Defensa", email: "defense@example.com" },
-];
-
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -317,33 +311,6 @@ export default function Login() {
         <p className="text-center text-xs text-gray-400">
           ¿No tienes cuenta? <Link to="/register" className="font-semibold text-white hover:text-gray-200 transition">Regístrate</Link>
         </p>
-
-        {/* Demo credentials */}
-        <div className="mt-6 border-t border-white/10 pt-4">
-          <p className="flex items-center gap-1.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
-            <Shield size={10} />
-            Credenciales de demostración
-          </p>
-          <div className="flex flex-col gap-1">
-            {DEMO_CREDS.map((c) => (
-              <button
-                key={c.email}
-                type="button"
-                onClick={() => { setEmail(c.email); setPassword("admin123"); }}
-                className="group flex items-center justify-between w-full rounded-lg px-2.5 py-1.5 text-left hover:bg-white/10 transition-colors"
-              >
-                <span className="text-xs text-gray-400 group-hover:text-white transition-colors">
-                  {c.role}
-                </span>
-                <span className="flex items-center gap-1 text-xs text-gray-300 font-mono">
-                  {c.email}
-                  <ChevronRight size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-
       </div>
     </div>
   );
