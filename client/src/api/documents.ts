@@ -19,3 +19,11 @@ export function uploadDocument(
     })
     .then((r) => r.data);
 }
+
+export function deleteDocument(
+  api: AxiosInstance,
+  caseId: string,
+  docId: string
+): Promise<unknown> {
+  return api.delete(`/api/cases/${caseId}/documents/${docId}`).then((r) => r.data);
+}

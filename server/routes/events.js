@@ -24,12 +24,29 @@ router.get('/', async (req, res) => {
 
     const { data: events, error } = await db
       .from('case_events')
-      .select('*, created_by_user:users!case_events_created_by_fkey(id, full_name, avatar_url, role)')
+      .select('*')
       .eq('case_id', caseId)
       .order('created_at', { ascending: true });
 
     if (error) throw error;
-    res.json(events || []);
+
+    // Enrich with created_by user info
+    const creatorIds = [...new Set((events || []).map((e) => e.created_by))];
+    let creatorMap = {};
+    if (creatorIds.length > 0) {
+      const { data: users } = await db
+        .from('users')
+        .select('id, full_name, avatar_url, role')
+        .in('id', creatorIds);
+      (users || []).forEach((u) => { creatorMap[u.id] = u; });
+    }
+
+    const enriched = (events || []).map((e) => ({
+      ...e,
+      created_by_user: creatorMap[e.created_by] || null,
+    }));
+
+    res.json(enriched);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

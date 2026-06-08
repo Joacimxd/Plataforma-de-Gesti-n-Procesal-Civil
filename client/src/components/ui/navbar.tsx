@@ -102,7 +102,7 @@ export default function Nav() {
   return (
     <header
       ref={navRef}
-      className="sticky top-0 z-50 border-b border-border bg-background"
+      className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm shadow-sm"
     >
       <nav className="container mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
         <Link to="/dashboard" className="group">
@@ -118,7 +118,7 @@ export default function Nav() {
               to={link.to}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                 location.pathname === link.to
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >
@@ -137,7 +137,7 @@ export default function Nav() {
               >
                 <IconBell size={17} />
                 {unread > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-[10px] font-bold text-background">
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white shadow-sm">
                     {unread > 9 ? "9+" : unread}
                   </span>
                 )}

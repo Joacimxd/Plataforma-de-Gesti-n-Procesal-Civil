@@ -24,9 +24,9 @@ const ROLE_LABEL: Record<Role, string> = {
 };
 
 const ROLE_COLOR: Record<Role, string> = {
-  JUDGE: "text-foreground bg-muted ring-border",
-  PLAINTIFF_LAWYER: "text-foreground bg-muted ring-border",
-  DEFENSE_LAWYER: "text-foreground bg-muted ring-border",
+  JUDGE: "text-amber-700 bg-amber-50 ring-amber-200",
+  PLAINTIFF_LAWYER: "text-blue-700 bg-blue-50 ring-blue-200",
+  DEFENSE_LAWYER: "text-violet-700 bg-violet-50 ring-violet-200",
 };
 
 function RoleIcon({ role, size = 14 }: { role: Role; size?: number }) {
@@ -178,9 +178,9 @@ export default function Profile() {
             </div>
 
             {message === "success" && (
-              <div className="flex items-center gap-2 rounded-lg bg-foreground/10 border border-teal-500/30 px-3 py-2.5">
-                <IconCheckCircle size={14} className="text-foreground shrink-0" />
-                <p className="text-sm text-foreground">Perfil actualizado correctamente</p>
+              <div className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2.5">
+                <IconCheckCircle size={14} className="text-emerald-600 shrink-0" />
+                <p className="text-sm text-emerald-700">Perfil actualizado correctamente</p>
               </div>
             )}
             {message === "error" && (
@@ -224,7 +224,7 @@ export default function Profile() {
             <div className="flex items-center justify-between py-1.5">
               <span className="text-sm text-muted-foreground">Estado</span>
               <span className="flex items-center gap-1.5 text-sm text-foreground">
-                <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 Activo
               </span>
             </div>

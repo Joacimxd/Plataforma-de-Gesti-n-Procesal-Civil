@@ -1,39 +1,29 @@
 /**
- * Supabase Seed Script
+ * SQLite Seed Script
  * 
  * Run with: node server/scripts/seed.js
  * 
- * Prerequisites:
- *   1. Run supabase-schema.sql in Supabase SQL Editor
- *   2. Create a Storage bucket named "documents" (public)
- *   3. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in server/.env
+ * This will create the database file (if it doesn't exist) and
+ * seed it with demo data.
  */
 
 import 'dotenv/config';
-import { createClient } from '@supabase/supabase-js';
+import { db } from '../services/db.js';
 import crypto from 'crypto';
-
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env');
-  process.exit(1);
-}
-
-const db = createClient(supabaseUrl, supabaseKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
 
 // ============================================================
 // SEED DATA
 // ============================================================
 
+import bcrypt from 'bcryptjs';
+
+const defaultPassword = bcrypt.hashSync('admin123', 12);
+
 const USERS = [
   {
     id: 'a1b2c3d4-0001-0001-0001-a1b2c3d4e5f6',
     email: 'judge@example.com',
-    password: 'admin123',
+    password: defaultPassword,
     full_name: 'Hon. Magistrada Elena Martínez',
     role: 'JUDGE',
     avatar_url: null,
@@ -41,7 +31,7 @@ const USERS = [
   {
     id: 'a1b2c3d4-0002-0002-0002-a1b2c3d4e5f6',
     email: 'plaintiff@example.com',
-    password: 'admin123',
+    password: defaultPassword,
     full_name: 'Lic. Carlos Torres Vega',
     role: 'PLAINTIFF_LAWYER',
     avatar_url: null,
@@ -49,7 +39,7 @@ const USERS = [
   {
     id: 'a1b2c3d4-0003-0003-0003-a1b2c3d4e5f6',
     email: 'defense@example.com',
-    password: 'admin123',
+    password: defaultPassword,
     full_name: 'Lic. Sofía García Ruiz',
     role: 'DEFENSE_LAWYER',
     avatar_url: null,
@@ -57,7 +47,7 @@ const USERS = [
   {
     id: 'a1b2c3d4-0004-0004-0004-a1b2c3d4e5f6',
     email: 'plaintiff2@example.com',
-    password: 'admin123',
+    password: defaultPassword,
     full_name: 'Lic. Roberto Mendoza Flores',
     role: 'PLAINTIFF_LAWYER',
     avatar_url: null,
@@ -65,7 +55,7 @@ const USERS = [
   {
     id: 'a1b2c3d4-0005-0005-0005-a1b2c3d4e5f6',
     email: 'defense2@example.com',
-    password: 'admin123',
+    password: defaultPassword,
     full_name: 'Lic. Ana Beatriz Herrera',
     role: 'DEFENSE_LAWYER',
     avatar_url: null,
@@ -140,18 +130,14 @@ async function seedCases() {
     judge_id: JUDGE_ID,
   }));
 
-  const { data: insertedCases, error: casesError } = await db
-    .from('cases')
-    .insert(casesToInsert)
-    .select('id, title, status');
-
+  const { error: casesError } = await db.from('cases').insert(casesToInsert);
   if (casesError) throw new Error(`Failed to seed cases: ${casesError.message}`);
 
-  console.log(`   ✅ ${insertedCases.length} cases seeded`);
+  console.log(`   ✅ ${casesToInsert.length} cases seeded`);
 
   // Seed participants and events
   console.log('👥 Seeding participants...');
-  const participants = insertedCases.map((c, i) => [
+  const participants = casesToInsert.map((c, i) => [
     { id: crypto.randomUUID(), case_id: c.id, user_id: CASE_TEMPLATES[i].plaintiff, side: 'PLAINTIFF' },
     { id: crypto.randomUUID(), case_id: c.id, user_id: CASE_TEMPLATES[i].defense, side: 'DEFENSE' },
   ]).flat();
@@ -162,7 +148,7 @@ async function seedCases() {
 
   console.log('📅 Seeding events...');
   const events = [];
-  insertedCases.forEach((c, i) => {
+  casesToInsert.forEach((c, i) => {
     const eventsToAdd = i % 3 === 0 ? 1 : i % 3 === 1 ? 3 : 5;
     for (let e = 0; e < Math.min(eventsToAdd, EVENT_TYPES.length); e++) {
       const evDef = EVENT_TYPES[e];
@@ -184,10 +170,10 @@ async function seedCases() {
   // Seed a few notifications
   console.log('🔔 Seeding notifications...');
   const notifications = [
-    { id: crypto.randomUUID(), user_id: PLAINTIFF_1, case_id: insertedCases[0].id, message: `Nuevo documento subido al caso "${insertedCases[0].title}"`, is_read: false },
-    { id: crypto.randomUUID(), user_id: PLAINTIFF_1, case_id: insertedCases[2].id, message: `El estado del caso "${insertedCases[2].title}" ha sido actualizado.`, is_read: true },
-    { id: crypto.randomUUID(), user_id: DEFENSE_1, case_id: insertedCases[0].id, message: `Nueva audiencia programada en "${insertedCases[0].title}"`, is_read: false },
-    { id: crypto.randomUUID(), user_id: JUDGE_ID, case_id: insertedCases[1].id, message: `La defensa presentó contestación en "${insertedCases[1].title}"`, is_read: false },
+    { id: crypto.randomUUID(), user_id: PLAINTIFF_1, case_id: casesToInsert[0].id, message: `Nuevo documento subido al caso "${casesToInsert[0].title}"`, is_read: false },
+    { id: crypto.randomUUID(), user_id: PLAINTIFF_1, case_id: casesToInsert[2].id, message: `El estado del caso "${casesToInsert[2].title}" ha sido actualizado.`, is_read: true },
+    { id: crypto.randomUUID(), user_id: DEFENSE_1, case_id: casesToInsert[0].id, message: `Nueva audiencia programada en "${casesToInsert[0].title}"`, is_read: false },
+    { id: crypto.randomUUID(), user_id: JUDGE_ID, case_id: casesToInsert[1].id, message: `La defensa presentó contestación en "${casesToInsert[1].title}"`, is_read: false },
   ];
 
   const { error: notifError } = await db.from('notifications').insert(notifications);
@@ -199,8 +185,7 @@ async function seedCases() {
 // MAIN
 // ============================================================
 async function main() {
-  console.log('\n🚀 Seeding Supabase database...\n');
-  console.log(`   URL: ${supabaseUrl}\n`);
+  console.log('\n🚀 Seeding SQLite database...\n');
 
   try {
     await seedUsers();

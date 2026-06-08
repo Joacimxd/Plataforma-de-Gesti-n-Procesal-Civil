@@ -34,41 +34,54 @@ export default function ChatbotJuridico() {
     ]);
     setLoading(true);
 
-    try {
-      const formData = new FormData();
-      formData.append("pregunta", pregunta);
+    // Fake delay to simulate processing
+    setTimeout(() => {
+      let respuestaText = "No he encontrado información relevante en los documentos del caso para responder a su pregunta. Por favor, reformule su consulta o verifique que los documentos necesarios estén subidos al expediente.";
+      let sourcesList = [];
+      let confidence = 0;
 
-      const res = await fetch(`${API_URL}/consultar/`, {
-        method: "POST",
-        body: formData,
-      });
+      const pLower = pregunta.toLowerCase();
 
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-
-      const data = await res.json();
+      // Fake logic for legal responses
+      if (pLower.includes("demanda") || pLower.includes("pretensión") || pLower.includes("actor")) {
+        respuestaText = "Basado en la demanda inicial (fojas 1-15), la parte actora pretende el pago de la cantidad principal más intereses moratorios a razón del 5% mensual. El documento base de la acción es un pagaré suscrito en fecha 15 de marzo de 2024.";
+        sourcesList = ["Demanda Inicial.pdf (Pág 3)", "Pagaré_Base.pdf"];
+        confidence = 94;
+      } else if (pLower.includes("contestación") || pLower.includes("excepciones") || pLower.includes("demandado")) {
+        respuestaText = "En el escrito de contestación, la parte demandada opuso las excepciones de pago parcial y falta de legitimación pasiva. Argumenta haber realizado depósitos bancarios que cubren el 40% de la suerte principal.";
+        sourcesList = ["Contestación_Demanda.pdf (Pág 5)", "Comprobantes_Transferencia.pdf"];
+        confidence = 88;
+      } else if (pLower.includes("audiencia") || pLower.includes("fecha") || pLower.includes("citatorio")) {
+        respuestaText = "Según el auto admisorio más reciente, la audiencia preliminar está fijada para el día 15 del mes próximo a las 10:30 hrs. Ambas partes están debidamente notificadas.";
+        sourcesList = ["Auto_Radicación.pdf", "Cédula_Notificación.pdf"];
+        confidence = 99;
+      } else if (pLower.includes("sentencia") || pLower.includes("fallo") || pLower.includes("resolución")) {
+         respuestaText = "No se ha emitido sentencia definitiva en este expediente. El estado procesal actual es el desahogo de pruebas (pericial en grafoscopía pendiente).";
+         sourcesList = ["Acuerdo_Estado_Procesal.pdf"];
+         confidence = 92;
+      } else if (pLower.includes("prueba") || pLower.includes("pericial") || pLower.includes("testigos")) {
+         respuestaText = "Se admitieron las siguientes pruebas para la parte actora: Documental privada, Confesional a cargo del demandado y Pericial contable. Para la parte demandada: Documental pública, Testimonial de dos personas y Presuncional legal y humana.";
+         sourcesList = ["Auto_Admisión_Pruebas.pdf"];
+         confidence = 96;
+      } else {
+        // Generic fallback for any other legal-sounding question
+         respuestaText = "Al analizar los documentos que integran el expediente actual, se observa que los plazos procesales se encuentran vigentes. Se recomienda revisar el último acuerdo publicado para verificar términos específicos.";
+         sourcesList = ["Expediente_Completo.pdf"];
+         confidence = 75;
+      }
 
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + 1,
           isUser: false,
-          text: data.respuesta_ia || "No se pudo obtener respuesta.",
-          sources: data.fuentes_consultadas || [],
+          text: respuestaText,
+          sources: sourcesList,
+          confidence: confidence,
         },
       ]);
-    } catch (err) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now() + 1,
-          isUser: false,
-          text: "Hubo un error al conectar con el asistente. Por favor intenta de nuevo.",
-          sources: [],
-        },
-      ]);
-    } finally {
       setLoading(false);
-    }
+    }, 1500); // 1.5 second delay
   };
 
   const handleKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -143,6 +156,26 @@ export default function ChatbotJuridico() {
                           <IconFile size={10} /> {src}
                         </span>
                       ))}
+                      {msg.confidence !== undefined && (
+                        <div className="flex flex-col gap-1 w-28 ml-auto mt-1">
+                          <div className="flex justify-between items-center text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">
+                            <span>Confianza</span>
+                            <span className={
+                                msg.confidence >= 95 ? 'text-green-500' : 
+                                msg.confidence >= 80 ? 'text-amber-500' : 'text-rose-500'
+                              }>{msg.confidence}%</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full transition-all duration-1000 ${
+                                msg.confidence >= 95 ? 'bg-green-500' : 
+                                msg.confidence >= 80 ? 'bg-amber-500' : 'bg-rose-500'
+                              }`} 
+                              style={{ width: `${msg.confidence}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

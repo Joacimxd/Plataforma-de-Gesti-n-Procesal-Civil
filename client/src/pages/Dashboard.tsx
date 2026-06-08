@@ -31,9 +31,9 @@ const STATUS_LABEL: Record<CaseStatus, string> = {
 };
 
 const STATUS_CLASS: Record<CaseStatus, string> = {
-  OPEN: "bg-secondary text-secondary-foreground",
-  IN_PROGRESS: "bg-primary text-primary-foreground",
-  CLOSED: "bg-muted text-muted-foreground border",
+  OPEN: "bg-blue-50 text-blue-700 border border-blue-200",
+  IN_PROGRESS: "bg-amber-50 text-amber-700 border border-amber-200",
+  CLOSED: "bg-emerald-50 text-emerald-700 border border-emerald-200",
 };
 
 const STATUS_ICON: Record<CaseStatus, React.ReactNode> = {
@@ -47,12 +47,14 @@ function StatCard({
   value,
   icon,
   color,
+  iconBg,
   index,
 }: {
   label: string;
   value: number;
   icon: React.ReactNode;
   color: string;
+  iconBg: string;
   index: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -79,17 +81,17 @@ function StatCard({
 
   return (
     <div ref={ref}>
-      <Card>
+      <Card className="card-elevated border-border/60">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+          <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             {label}
           </CardTitle>
-          <div className={`h-10 w-10 flex items-center justify-center rounded-xl bg-muted ${color}`}>
+          <div className={`h-9 w-9 flex items-center justify-center rounded-lg ${iconBg} ${color}`}>
             {icon}
           </div>
         </CardHeader>
         <CardContent>
-          <div className={`text-3xl font-bold ${color}`}>
+          <div className={`text-3xl font-bold tracking-tight ${color}`}>
             <span data-count>0</span>
           </div>
         </CardContent>
@@ -177,18 +179,16 @@ export default function Dashboard() {
       <div ref={headerRef} className="mb-8">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+              {new Date().toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+            </p>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
               Bienvenido/a,{" "}
               <span className="text-primary">{user?.full_name?.split(" ")[0]}</span>
             </h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {new Date().toLocaleDateString("es-MX", {
-                weekday: "long", year: "numeric", month: "long", day: "numeric",
-              })}
-            </p>
           </div>
           {user?.role === "JUDGE" && (
-            <Button asChild className="hidden sm:flex">
+            <Button asChild className="hidden sm:flex shadow-sm">
               <Link to="/cases/new">
                 <IconPlus size={16} className="mr-2" />
                 Nuevo Caso
@@ -200,10 +200,10 @@ export default function Dashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Total de Casos" value={stats.total} icon={<IconClipboardList size={20} />} color="text-foreground" index={0} />
-        <StatCard label="Abiertos" value={stats.open} icon={<IconFolderOpen size={20} />} color="text-foreground" index={1} />
-        <StatCard label="En Curso" value={stats.inProgress} icon={<IconClock size={20} />} color="text-foreground" index={2} />
-        <StatCard label="Cerrados" value={stats.closed} icon={<IconCheckCircle size={20} />} color="text-muted-foreground" index={3} />
+        <StatCard label="Total de Casos" value={stats.total} icon={<IconClipboardList size={18} />} color="text-primary" iconBg="bg-primary/10" index={0} />
+        <StatCard label="Abiertos" value={stats.open} icon={<IconFolderOpen size={18} />} color="text-blue-600" iconBg="bg-blue-50" index={1} />
+        <StatCard label="En Curso" value={stats.inProgress} icon={<IconClock size={18} />} color="text-amber-600" iconBg="bg-amber-50" index={2} />
+        <StatCard label="Cerrados" value={stats.closed} icon={<IconCheckCircle size={18} />} color="text-emerald-600" iconBg="bg-emerald-50" index={3} />
       </div>
 
       {/* Search + Filters */}
@@ -254,9 +254,9 @@ export default function Dashboard() {
           <div className="flex flex-col gap-3">
             {filtered.map((c) => (
               <Link to={`/cases/${c.id}`} key={c.id} className="block group case-card">
-                <Card className="transition-all hover:bg-accent hover:border-primary/50">
+                <Card className="card-elevated border-border/60 transition-all hover:border-primary/30 hover:shadow-md">
                   <div className="flex items-center gap-4 px-5 py-4">
-                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${STATUS_CLASS[c.status]}`}>
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${STATUS_CLASS[c.status]}`}>
                       {STATUS_ICON[c.status]}
                     </div>
 
@@ -270,7 +270,7 @@ export default function Dashboard() {
                     </div>
 
                     <div className="hidden sm:flex flex-col items-end gap-1.5 shrink-0">
-                      <Badge variant="secondary" className={STATUS_CLASS[c.status]}>
+                      <Badge variant="secondary" className={`${STATUS_CLASS[c.status]} font-medium text-xs`}>
                         {STATUS_LABEL[c.status]}
                       </Badge>
                       <p className="text-xs text-muted-foreground font-medium">

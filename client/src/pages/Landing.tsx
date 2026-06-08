@@ -84,21 +84,21 @@ export default function Landing() {
           
          
           
-          <p className="animate-item text-lg md:text-2xl text-gray-400 max-w-3xl font-light">
+          <p className="animate-item text-base md:text-xl text-gray-400 max-w-2xl leading-relaxed">
             La plataforma definitiva para la gestión de procesos civiles. Centraliza tus expedientes, colabora en tiempo real y obtén respuestas impulsadas por IA.
           </p>
           
-          <div className="animate-item flex items-center justify-center gap-4 pt-8">
+          <div className="animate-item flex items-center justify-center gap-3 pt-8">
             <Link
               to="/login"
-              className="group flex items-center justify-center py-4 px-8 bg-white text-zinc-950 hover:bg-gray-200 rounded-full font-bold transition-all duration-300"
+              className="group flex items-center justify-center py-3.5 px-7 bg-white text-zinc-950 hover:bg-gray-100 rounded-xl font-semibold text-sm transition-all duration-200 shadow-lg shadow-white/10"
             >
               Iniciar Sesión
-              <ArrowRight className="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               to="/register"
-              className="flex items-center justify-center py-4 px-8 bg-transparent border border-white/30 hover:bg-white/10 text-white rounded-full font-bold transition-all duration-300"
+              className="flex items-center justify-center py-3.5 px-7 bg-transparent border border-white/25 hover:bg-white/8 hover:border-white/40 text-white rounded-xl font-semibold text-sm transition-all duration-200"
             >
               Registrarse
             </Link>
@@ -138,25 +138,25 @@ export default function Landing() {
       </section>
 
       {/* Service Overview */}
-      <section className="py-24 px-6 bg-zinc-900/50 border-y border-white/5">
+      <section className="py-24 px-6 bg-zinc-900/40 border-y border-white/5">
         <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">¿Qué ofrecemos?</h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-16 font-light">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Capacidades de la plataforma</h2>
+          <p className="text-base text-gray-400 max-w-2xl mx-auto mb-14 leading-relaxed">
             Una suite completa diseñada para optimizar cada etapa del proceso civil.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { title: "Expedientes Centralizados", desc: "Todos los documentos, mociones y sentencias organizados de manera segura en un solo lugar.", icon: <Shield size={24} /> },
-              { title: "Asistencia de IA", desc: "Chatbot jurídico avanzado entrenado específicamente con los documentos del caso para obtener respuestas precisas y rápidas.", icon: <Scale size={24} /> },
-              { title: "Colaboración Fluida", desc: "Comunicación directa entre demandantes, defensores y jueces mediante una interfaz clara y estructurada.", icon: <Users size={24} /> }
+              { title: "Expedientes Centralizados", desc: "Todos los documentos, mociones y sentencias organizados de manera segura en un solo lugar.", icon: <Shield size={22} /> },
+              { title: "Asistencia de IA", desc: "Chatbot jurídico avanzado entrenado específicamente con los documentos del caso para obtener respuestas precisas y rápidas.", icon: <Scale size={22} /> },
+              { title: "Colaboración Fluida", desc: "Comunicación directa entre demandantes, defensores y jueces mediante una interfaz clara y estructurada.", icon: <Users size={22} /> }
             ].map((feature, i) => (
-              <div key={i} className="p-8 rounded-2xl bg-zinc-900 border border-white/5 text-left flex flex-col hover:bg-zinc-800 transition-colors">
-                <div className="w-12 h-12 rounded-xl bg-white text-zinc-950 flex items-center justify-center mb-6">
+              <div key={i} className="p-8 rounded-2xl bg-zinc-900 border border-white/5 text-left flex flex-col hover:bg-white/5 hover:border-white/10 transition-all duration-300">
+                <div className="w-11 h-11 rounded-xl bg-blue-500/15 border border-blue-400/20 text-blue-300 flex items-center justify-center mb-6">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                <p className="text-gray-400">{feature.desc}</p>
+                <h3 className="text-lg font-bold mb-3">{feature.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -166,9 +166,9 @@ export default function Landing() {
       {/* Founders Section */}
       <section ref={foundersRef} className="py-32 px-6 bg-zinc-950">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">Fundadores</h2>
-            <p className="text-xl text-gray-400 font-light">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">Fundadores</h2>
+            <p className="text-base text-gray-400 max-w-lg mx-auto leading-relaxed">
               El equipo multidisciplinario detrás de la innovación procesal.
             </p>
           </div>

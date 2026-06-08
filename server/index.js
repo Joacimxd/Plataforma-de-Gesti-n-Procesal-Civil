@@ -1,6 +1,9 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import morgan from 'morgan';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import casesRouter from './routes/cases.js';
 import participantsRouter from './routes/participants.js';
 import documentsRouter from './routes/documents.js';
@@ -11,10 +14,19 @@ import profileRouter from './routes/profile.js';
 import { auth } from './middleware/auth.js';
 import { db } from './services/db.js';
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const app = express();
+
+// ── Middleware ─────────────────────────────────────────────────────────────────
+app.use(cors());
+app.use(express.json({ limit: '1mb' }));
+app.use(morgan('dev'));
+
+// Serve uploaded documents as static files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/users', usersRouter);
 app.use('/api/profile', profileRouter);
 app.use('/api/cases', casesRouter);
@@ -43,6 +55,16 @@ app.get('/api/documents/:id', auth, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// ── Global Error Handler ──────────────────────────────────────────────────────
+app.use((err, req, res, _next) => {
+  console.error('💥 Unhandled error:', err.stack || err.message);
+  const status = err.status || 500;
+  const message = process.env.NODE_ENV === 'production'
+    ? 'Internal server error'
+    : err.message || 'Internal server error';
+  res.status(status).json({ error: message });
 });
 
 const PORT = process.env.PORT || 3001;

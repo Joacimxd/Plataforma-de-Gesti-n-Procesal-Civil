@@ -1,8 +1,14 @@
 import { Router } from 'express';
 import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { db } from '../services/db.js';
 import { auth } from '../middleware/auth.js';
 import crypto from 'crypto';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const UPLOADS_DIR = path.resolve(__dirname, '..', 'uploads');
 
 const router = Router({ mergeParams: true });
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -30,14 +36,31 @@ router.get('/', async (req, res) => {
     const allowed = await canAccessCase(caseId, req.user.id);
     if (!allowed) return res.status(403).json({ error: 'Access denied to this case' });
 
-    const { data, error } = await db
+    const { data: docs, error } = await db
       .from('documents')
-      .select('*, uploader:users!documents_uploaded_by_fkey(id, full_name, avatar_url, role)')
+      .select('*')
       .eq('case_id', caseId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    res.json(data || []);
+
+    // Enrich with uploader info
+    const uploaderIds = [...new Set((docs || []).map((d) => d.uploaded_by))];
+    let uploaderMap = {};
+    if (uploaderIds.length > 0) {
+      const { data: users } = await db
+        .from('users')
+        .select('id, full_name, avatar_url, role')
+        .in('id', uploaderIds);
+      (users || []).forEach((u) => { uploaderMap[u.id] = u; });
+    }
+
+    const enriched = (docs || []).map((d) => ({
+      ...d,
+      uploader: uploaderMap[d.uploaded_by] || null,
+    }));
+
+    res.json(enriched);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -58,24 +81,18 @@ router.post('/', upload.single('file'), async (req, res) => {
     if (!caseRow) return res.status(404).json({ error: 'Case not found' });
     if (caseRow.status === 'CLOSED') return res.status(403).json({ error: 'Cannot upload documents to a closed case' });
 
+    const isJudge = caseRow.judge_id === req.user.id;
     const assigned = await isAssignedLawyer(caseId, req.user.id);
-    if (!assigned) return res.status(403).json({ error: 'Only assigned lawyers can upload documents' });
+    if (!isJudge && !assigned) return res.status(403).json({ error: 'Only the judge or assigned lawyers can upload documents' });
 
-    // Upload file to Supabase Storage
+    // Save file to local filesystem
     const ext = (file.originalname && file.originalname.split('.').pop()) || 'bin';
     const filename = `${crypto.randomUUID()}.${ext}`;
-    const storagePath = `cases/${caseId}/${filename}`;
+    const caseDir = path.join(UPLOADS_DIR, 'cases', caseId);
+    fs.mkdirSync(caseDir, { recursive: true });
+    fs.writeFileSync(path.join(caseDir, filename), file.buffer);
 
-    const { error: storageError } = await db.storage
-      .from('documents')
-      .upload(storagePath, file.buffer, {
-        contentType: file.mimetype || 'application/octet-stream',
-        upsert: false,
-      });
-
-    if (storageError) throw storageError;
-
-    const { data: { publicUrl } } = db.storage.from('documents').getPublicUrl(storagePath);
+    const fileUrl = `/uploads/cases/${caseId}/${filename}`;
 
     const docId = crypto.randomUUID();
     const { data: doc, error: docError } = await db
@@ -86,7 +103,7 @@ router.post('/', upload.single('file'), async (req, res) => {
         uploaded_by: req.user.id,
         title: title.trim(),
         type,
-        file_url: publicUrl,
+        file_url: fileUrl,
       })
       .select()
       .single();
@@ -124,6 +141,46 @@ router.post('/', upload.single('file'), async (req, res) => {
     }
 
     res.status(201).json(doc);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+router.delete('/:docId', async (req, res) => {
+  try {
+    const { id: caseId, docId } = req.params;
+
+    const { data: doc } = await db.from('documents').select('*').eq('id', docId).eq('case_id', caseId).single();
+    if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+    const { data: caseRow } = await db.from('cases').select('judge_id, status').eq('id', caseId).single();
+    if (caseRow?.status === 'CLOSED') return res.status(403).json({ error: 'Cannot delete documents from a closed case' });
+
+    const isJudge = caseRow?.judge_id === req.user.id;
+    const isUploader = doc.uploaded_by === req.user.id;
+
+    if (!isJudge && !isUploader) {
+      return res.status(403).json({ error: 'Only the judge or the uploader can delete this document' });
+    }
+
+    if (doc.file_url.startsWith('/uploads/cases/')) {
+      const filePath = path.join(__dirname, '..', doc.file_url.replace('/uploads/', 'uploads/'));
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
+    await db.from('documents').delete().eq('id', docId);
+
+    // Event
+    await db.from('case_events').insert({
+      id: crypto.randomUUID(),
+      case_id: caseId,
+      event_type: 'DOCUMENT_UPLOADED',
+      description: `${req.user.full_name} eliminó el documento "${doc.title}"`,
+      created_by: req.user.id,
+    });
+
+    res.json({ message: 'Document deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
