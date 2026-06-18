@@ -1,5 +1,26 @@
 # Plataforma de Gestión Procesal Civil
 
+## Requisitos
+* Tener **Docker** y **Docker Desktop** instalados y ejecutándose en segundo plano.
+* No es necesario instalar dependencias de Node.js ni configurar bases de datos locales. Todo está contenido en la imagen de Docker y conectado a la nube.
+
+## Instrucciones para ejecutar el proyecto
+1. Descomprimir este archivo `.zip`.
+2. Abrir una terminal directamente en la carpeta raíz del proyecto (donde se encuentra el archivo `docker-compose.yml`).
+3. Ejecutar el siguiente comando para construir y levantar los contenedores:
+   `docker compose up --build`
+4. Esperar a que la terminal indique que los servicios están listos.
+5. Abrir el navegador y acceder a:
+   * **Principal:** http://localhost
+   * **Plataforma (Frontend):** http://localhost:80
+   * **API (Backend):** http://localhost:3001
+
+> **Nota:** Las variables de entorno (`.env`) ya van incluidas en el proyecto para que se conecte automáticamente a la base de datos de pruebas en Supabase sin necesidad de configuración adicional.
+
+_________________________________________________________________________________
+
+# Plataforma de Gestión Procesal Civil
+
 Plataforma web para gestión de juicios civiles por incumplimiento de contrato. Roles: Juez, Abogado demandante, Abogado de la defensa.
 
 ## Stack
