@@ -111,14 +111,16 @@ router.get('/search', auth, async (req, res) => {
     let query = db
       .from('users')
       .select('id, email, full_name, role, avatar_url')
-      .in('role', ['PLAINTIFF_LAWYER', 'DEFENSE_LAWYER'])
       .limit(20);
 
     if (role) {
       query = query.eq('role', role);
+    } else {
+      query = query.in('role', ['PLAINTIFF_LAWYER', 'DEFENSE_LAWYER']);
     }
     if (q && String(q).trim()) {
-      query = query.ilike('full_name', `%${String(q).trim()}%`);
+      const term = `%${String(q).trim()}%`;
+      query = query.or(`full_name.ilike.${term},email.ilike.${term}`);
     }
 
     const { data, error } = await query;
